@@ -41,19 +41,30 @@ export default function RestaurantPermitMap() {
 
   const [currentYearData, setCurrentYearData] = useState([])
   const [year, setYear] = useState(2026)
+  const [error, setError] = useState(null)
 
   const yearlyDataEndpoint = `/map-data/?year=${year}`
 
   useEffect(() => {
-    fetch()
+    fetch(yearlyDataEndpoint)
       .then((res) => res.json())
       .then((data) => {
-        /**
-         * TODO: Fetch the data needed to supply to map with data
-         */
+        setCurrentYearData(data)
+        console.log(data)
+      })
+      .catch(error => {
+        setError(error.message)
+        console.error('Error fetching data:', error)
       })
   }, [yearlyDataEndpoint])
 
+  const totalSum = currentYearData.reduce((accumulator, currentValue) => {
+    return accumulator + currentValue.num_permits;
+  }, 0)
+
+  const maxNumPermits = currentYearData.reduce((accumulator, currentValue) => {
+    return accumulator > currentValue.num_permits ? accumulator : currentValue.num_permits;
+  }, 0)
 
   function getColor(percentageOfPermits) {
     /**
@@ -81,11 +92,11 @@ export default function RestaurantPermitMap() {
     <>
       <YearSelect filterVal={year} setFilterVal={setYear} />
       <p className="fs-4">
-        Restaurant permits issued this year: {/* TODO: display this value */}
+        Restaurant permits issued this year: {totalSum}
       </p>
       <p className="fs-4">
         Maximum number of restaurant permits in a single area:
-        {/* TODO: display this value */}
+        {maxNumPermits}
       </p>
       <MapContainer
         id="restaurant-map"
