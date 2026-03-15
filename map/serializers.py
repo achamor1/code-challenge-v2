@@ -6,11 +6,19 @@ from map.models import CommunityArea, RestaurantPermit
 class CommunityAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunityArea
-        fields = ["name", "num_permits"]
+        fields = ["name", "area_id", "num_permits"]
 
     num_permits = serializers.SerializerMethodField()
 
     def get_num_permits(self, obj):
+
+        return len(
+            RestaurantPermit.objects.filter(
+                issue_date__year=self.context["year"], 
+                community_area_id=str(obj.area_id)
+                )
+            )
+        
         """
         TODO: supplement each community area object with the number
         of permits issued in the given year.
