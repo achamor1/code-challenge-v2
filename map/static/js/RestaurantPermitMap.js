@@ -41,7 +41,6 @@ export default function RestaurantPermitMap() {
 
   const [currentYearData, setCurrentYearData] = useState([])
   const [year, setYear] = useState(2026)
-  const [error, setError] = useState(null)
 
   const yearlyDataEndpoint = `/map-data/?year=${year}`
 
@@ -66,24 +65,43 @@ export default function RestaurantPermitMap() {
     return accumulator > currentValue.num_permits ? accumulator : currentValue.num_permits;
   }, 0)
 
+  /**
+   * Helper funcion for getColor. Computes percentage of permits 
+   * per ward given a max number of permits for a given year. 
+   * Returns percentage and current number of permits
+   */
+  function getPercentage(prop_object) {
+    const current_community = currentYearData.find(x => x.name === prop_object.community)
+    const percentageOfPermits = Math.round((current_community.num_permits / maxNumPermits) * 100)
+    return [percentageOfPermits, current_community.num_permits]
+  }
+
+  /**
+  * Splits percentages into 4 'buckets' corresponding
+  * to each array entry in communityAreaColors
+  * Bucket 1: |  0% - <25% | #eff3ff
+  * Bucket 2: | 25% - <50% | #bdd7e7
+  * Bucket 3: | 50% - <75% | #6baed6
+  * Bucket 4: | 75% - 100% | #2171b5
+  */
   function getColor(percentageOfPermits) {
-    /**
-     * TODO: Use this function in setAreaInteraction to set a community 
-     * area's color using the communityAreaColors constant above
-     */
+    if (percentageOfPermits < 25) {
+      return communityAreaColors[0]
+    } else if (percentageOfPermits <50) {
+      return communityAreaColors[1]
+    } else if (percentageOfPermits < 75) {
+      return communityAreaColors[2]
+    } else {
+      return communityAreaColors[3]
+    }
   }
 
   function setAreaInteraction(feature, layer) {
-    /**
-     * TODO: Use the methods below to:
-     * 1) Shade each community area according to what percentage of 
-     * permits were issued there in the selected year
-     * 2) On hover, display a popup with the community area's raw 
-     * permit count for the year
-     */
-    layer.setStyle()
-    layer.on("", () => {
-      layer.bindPopup("")
+    const [percentageOfPermits, communityPermits] = getPercentage(feature.properties)
+
+    layer.setStyle({color: 'black', weight: 1.5, fillColor: getColor(percentageOfPermits), fillOpacity: 1})
+    layer.on("mouseover", () => {
+      layer.bindPopup(`<b>${feature.properties.community}</b><br>Year: ${year}</br><a>Permits issued: ${communityPermits}</a>`)
       layer.openPopup()
     })
   }
