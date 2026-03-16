@@ -6,7 +6,9 @@ from rest_framework.test import APIClient
 
 from map.models import CommunityArea, RestaurantPermit
 
-
+# assert that the /map-data/ endpoint
+# returns the correct number of permits for Beverly and Lincoln 
+# Park in 2021
 @pytest.mark.django_db
 def test_map_data_view():
     # Create some test community areas
@@ -34,11 +36,7 @@ def test_map_data_view():
 
     # Query the map data endpoint
     client = APIClient()
+    # TODO: re-work after modifying serializers.py
     response = client.get(reverse("map_data", query={"year": 2021}))
     permits = response.data[0].get("num_permits") + response.data[1].get("num_permits")
     assert permits == 5
-
-
-    # TODO: Complete the test by asserting that the /map-data/ endpoint
-    # returns the correct number of permits for Beverly and Lincoln 
-    # Park in 2021

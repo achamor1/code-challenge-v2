@@ -3,6 +3,24 @@ from rest_framework import serializers
 from map.models import CommunityArea, RestaurantPermit
 
 
+"""
+TODO: Re-work this to return in a more parseable format 
+
+e.g. The endpoint /map-data/?year=2017 should return something like:
+    [
+        {
+            "ROGERS PARK": {
+                area_id: 17,
+                num_permits: 2
+            },
+            "BEVERLY": {
+                area_id: 72,
+                num_permits: 2
+            },
+            ...
+        }
+    ]
+ """
 class CommunityAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunityArea
@@ -19,24 +37,3 @@ class CommunityAreaSerializer(serializers.ModelSerializer):
                 )
             )
         
-        """
-        TODO: supplement each community area object with the number
-        of permits issued in the given year.
-
-        e.g. The endpoint /map-data/?year=2017 should return something like:
-        [
-            {
-                "ROGERS PARK": {
-                    area_id: 17,
-                    num_permits: 2
-                },
-                "BEVERLY": {
-                    area_id: 72,
-                    num_permits: 2
-                },
-                ...
-            }
-        ]
-        """
-
-        pass
