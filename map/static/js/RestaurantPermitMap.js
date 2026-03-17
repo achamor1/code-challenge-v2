@@ -46,42 +46,48 @@ export default function RestaurantPermitMap() {
 
   useEffect(() => {
     fetch(yearlyDataEndpoint)
-      .then((res) => res.json())
+      .then((res) => {
+        if(!res.ok) 
+          throw new Error(`Server error: ${res.status}`)
+        return res.json()
+      })
       .then((data) => {
         setCurrentYearData(data)
-        console.log(data)
       })
       .catch(error => {
-        setError(error.message)
         console.error('Error fetching data:', error)
       })
   }, [yearlyDataEndpoint])
 
+  /**
+   * Add up number of permits per community area, returning citywide total for a given year
+   */
   const totalSum = currentYearData.reduce((accumulator, currentValue) => {
-    return accumulator + currentValue.num_permits;
+    return accumulator + Object.values(currentValue)[0].num_permits;
   }, 0)
 
+  /**
+   * Iterate through number of permits per community area, returning the maximum value found
+   */
   const maxNumPermits = currentYearData.reduce((accumulator, currentValue) => {
-    return accumulator > currentValue.num_permits ? accumulator : currentValue.num_permits;
+    return accumulator > Object.values(currentValue)[0].num_permits ? accumulator : Object.values(currentValue)[0].num_permits;
   }, 0)
 
   /**
    * Helper funcion for getColor. Computes percentage of permits 
-   * per ward given a max number of permits for a given year. 
-   * Returns percentage and current number of permits
+   * per ward out of the max number of permits for a given year.
    */
-  function getPercentage(prop_object) {
-    const current_community = currentYearData.find(x => x.name === prop_object.community)
-    const percentageOfPermits = Math.round((current_community.num_permits / maxNumPermits) * 100)
-    return [percentageOfPermits, current_community.num_permits]
+  function getPercentageOfPermits(communityPermits) {
+    if (maxNumPermits === 0){return 0}
+    return Math.round((communityPermits / maxNumPermits) * 100)
   }
 
   /**
   * Splits percentages into 4 'buckets' corresponding
   * to each array entry in communityAreaColors
-  * Bucket 1: |  0% - <25% | #eff3ff
-  * Bucket 2: | 25% - <50% | #bdd7e7
-  * Bucket 3: | 50% - <75% | #6baed6
+  * Bucket 1: |  0% - 24% | #eff3ff
+  * Bucket 2: | 25% - 49% | #bdd7e7
+  * Bucket 3: | 50% - 74% | #6baed6
   * Bucket 4: | 75% - 100% | #2171b5
   */
   function getColor(percentageOfPermits) {
@@ -97,42 +103,84 @@ export default function RestaurantPermitMap() {
   }
 
   function setAreaInteraction(feature, layer) {
-    const [percentageOfPermits, communityPermits] = getPercentage(feature.properties)
+
+    // Get community area object that corresponds to current geojson feature
+    const currentCommunityObj = currentYearData.find(communityArea => Object.keys(communityArea)[0] === feature.properties.community)
+    const communityPermits = Object.values(currentCommunityObj)[0].num_permits
+
+    const percentageOfPermits = getPercentageOfPermits(communityPermits)
 
     layer.setStyle({color: 'black', weight: 1.5, fillColor: getColor(percentageOfPermits), fillOpacity: 1})
-    layer.on("mouseover", () => {
-      layer.bindPopup(`<b>${feature.properties.community}</b><br>Year: ${year}</br><a>Permits issued: ${communityPermits}</a>`)
+    layer.on("click", () => {
+      layer.bindPopup(
+        `<b>${feature.properties.community}</b></br>
+        <span>Year: ${year}<span></br>
+        <span>Permits issued: ${communityPermits}</span>`)
       layer.openPopup()
     })
   }
 
   return (
-    <>
-      <YearSelect filterVal={year} setFilterVal={setYear} />
-      <p className="fs-4">
-        Restaurant permits issued this year: {totalSum}
-      </p>
-      <p className="fs-4">
-        Maximum number of restaurant permits in a single area:
-        {maxNumPermits}
-      </p>
-      <MapContainer
-        id="restaurant-map"
-        center={[41.88, -87.62]}
-        zoom={10}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
-        />
-        {currentYearData.length > 0 ? (
-          <GeoJSON
-            data={RAW_COMMUNITY_AREAS}
-            onEachFeature={setAreaInteraction}
-            key={maxNumPermits}
+    <main>
+      <section aria-label="Filter controls">
+        <YearSelect filterVal={year} setFilterVal={setYear} />
+      </section>
+
+      <section aria-label="Summary statistics">
+        <p className="fs-4">
+          Restaurant permits issued this year: {totalSum}
+        </p>
+        <p className="fs-4">
+          Maximum number of restaurant permits in a single area:
+          {maxNumPermits}
+        </p>
+      </section>
+
+      <section aria-label="Map legend">
+        <strong>Permits (% of max)</strong>
+        <ul style={{listStyle: "none", padding: 0}}>
+          <li>
+            <span style={{background: communityAreaColors[0],     
+            padding: "0 8px"}}>&nbsp;</span> 0–24%
+          </li>
+          <li>
+            <span style={{background: communityAreaColors[1],     
+            padding: "0 8px"}}>&nbsp;</span> 25–49%
+          </li>
+          <li>
+            <span style={{background: communityAreaColors[2],     
+            padding: "0 8px"}}>&nbsp;</span> 50–74%
+          </li>
+          <li>
+            <span style={{background: communityAreaColors[3],     
+            padding: "0 8px"}}>&nbsp;</span> 75–100%
+          </li>
+        </ul>
+      </section>
+
+      <section aria-label="Map of Chicago restaurant permits by community area">
+        <p aria-live="polite">
+          {currentYearData.length === 0 ?     
+          "Loading map data..." : ""}
+        </p>
+        <MapContainer
+          id="restaurant-map"
+          center={[41.88, -87.62]}
+          zoom={10}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
           />
-        ) : null}
-      </MapContainer>
-    </>
+          {currentYearData.length > 0 ? (
+            <GeoJSON
+              data={RAW_COMMUNITY_AREAS}
+              onEachFeature={setAreaInteraction}
+              key={maxNumPermits}
+            />
+          ) : null}
+        </MapContainer>
+      </section>
+    </main>
   )
 }
