@@ -132,28 +132,36 @@ export default function RestaurantPermitMap() {
         </p>
         <p className="fs-4">
           Maximum number of restaurant permits in a single area:
-          {maxNumPermits}
+          {" "}{maxNumPermits}
         </p>
       </section>
 
-      <section aria-label="Map legend">
-        <strong>Permits (% of max)</strong>
+      <section aria-label="Map color legend" role="figure">
+        <h2 className="fs-6 fw-bold">Permits (% of max)</h2>
         <ul style={{listStyle: "none", padding: 0}}>
           <li>
-            <span style={{background: communityAreaColors[0],     
-            padding: "0 8px"}}>&nbsp;</span> 0–24%
+            <span aria-hidden="true" 
+            style={{background: communityAreaColors[0],     
+            padding: "0 8px"}}>&nbsp;
+            </span> 0–24%
           </li>
           <li>
-            <span style={{background: communityAreaColors[1],     
-            padding: "0 8px"}}>&nbsp;</span> 25–49%
+            <span aria-hidden="true" 
+            style={{background: communityAreaColors[1],     
+            padding: "0 8px"}}>&nbsp;
+            </span> 25–49%
           </li>
           <li>
-            <span style={{background: communityAreaColors[2],     
-            padding: "0 8px"}}>&nbsp;</span> 50–74%
+            <span aria-hidden="true"
+            style={{background: communityAreaColors[2],     
+            padding: "0 8px"}}>&nbsp;
+            </span> 50–74%
           </li>
           <li>
-            <span style={{background: communityAreaColors[3],     
-            padding: "0 8px"}}>&nbsp;</span> 75–100%
+            <span aria-hidden="true"
+            style={{background: communityAreaColors[3],     
+            padding: "0 8px"}}>&nbsp;
+            </span> 75–100%
           </li>
         </ul>
       </section>
