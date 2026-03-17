@@ -36,7 +36,6 @@ def test_map_data_view():
 
     # Query the map data endpoint
     client = APIClient()
-    # TODO: re-work after modifying serializers.py
     response = client.get(reverse("map_data", query={"year": 2021}))
-    permits = response.data[0].get("num_permits") + response.data[1].get("num_permits")
-    assert permits == 5
+    assert response.data[0].get("Beverly").get("num_permits") == 2
+    assert response.data[1].get("Lincoln Park").get("num_permits") == 3
