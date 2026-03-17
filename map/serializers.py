@@ -4,7 +4,8 @@ from map.models import CommunityArea, RestaurantPermit
 
 
 """
-TODO: Re-work this to return in a more parseable format 
+Serialize data, appending total number
+of permits per community area
 
 e.g. The endpoint /map-data/?year=2017 should return something like:
     [
@@ -36,4 +37,14 @@ class CommunityAreaSerializer(serializers.ModelSerializer):
                 community_area_id=str(obj.area_id)
                 )
             )
+
+    # Override to_representation to return data in the specified structure
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        return {
+            data["name"]: {
+                "area_id": data["area_id"],
+                "num_permits": data["num_permits"]
+            }
+        }
         
