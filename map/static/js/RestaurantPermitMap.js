@@ -114,29 +114,29 @@ export default function RestaurantPermitMap() {
     layer.on("click", () => {
       layer.bindPopup(
         `<b>${feature.properties.community}</b></br>
-        <span>Year: ${year}<span></br>
+        <span>Year: ${year}</span></br>
         <span>Permits issued: ${communityPermits}</span>`)
       layer.openPopup()
     })
   }
 
   return (
-    <main>
+    <>
       <section aria-label="Filter controls">
         <YearSelect filterVal={year} setFilterVal={setYear} />
       </section>
 
       <section aria-label="Summary statistics">
-        <p className="fs-4">
+        <p className="fs-4" aria-live="polite">
           Restaurant permits issued this year: {totalSum}
         </p>
-        <p className="fs-4">
+        <p className="fs-4" aria-live="polite">
           Maximum number of restaurant permits in a single area:
           {" "}{maxNumPermits}
         </p>
       </section>
 
-      <section aria-label="Map color legend" role="figure">
+      <section aria-label="Map color legend">
         <h2 className="fs-6 fw-bold">Permits (% of max)</h2>
         <ul style={{listStyle: "none", padding: 0}}>
           <li>
@@ -169,7 +169,7 @@ export default function RestaurantPermitMap() {
       <section aria-label="Map of Chicago restaurant permits by community area">
         <p aria-live="polite">
           {currentYearData.length === 0 ?     
-          "Loading map data..." : ""}
+          "Loading map data..." : "Map data loaded"}
         </p>
         <MapContainer
           id="restaurant-map"
@@ -189,6 +189,6 @@ export default function RestaurantPermitMap() {
           ) : null}
         </MapContainer>
       </section>
-    </main>
+    </>
   )
 }
